@@ -1,5 +1,7 @@
 package com.oocl.springbootemployee.service;
 
+import com.oocl.springbootemployee.exception.EmployeeAgeNotValidException;
+import com.oocl.springbootemployee.exception.EmployeeSalaryNotValidException;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.repository.IEmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ public class EmployeeService {
     }
 
     public Employee creat(Employee employee) {
+        if(employee.getAge() < 18 || employee.getAge() > 65) throw new EmployeeAgeNotValidException();
+        else if (employee.getAge() >= 30 && employee.getSalary() <= 20000) throw new EmployeeSalaryNotValidException();
         return employeeRepository.addEmployee(employee);
     }
 
