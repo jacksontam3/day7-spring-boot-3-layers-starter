@@ -1,10 +1,10 @@
 package com.oocl.springbootemployee.service;
 
 import com.oocl.springbootemployee.exception.EmployeeAgeNotValidException;
+import com.oocl.springbootemployee.exception.EmployeeNotActiveException;
 import com.oocl.springbootemployee.exception.EmployeeSalaryNotValidException;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
-import com.oocl.springbootemployee.repository.EmployeeRepository;
 import com.oocl.springbootemployee.repository.IEmployeeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,10 +53,11 @@ class EmployeeServiceTest {
         EmployeeService employeeService = new EmployeeService(mockedEmployeeRepository);
 
         //when
-        Employee createdEmployee = employeeService.creat(lucy);
+        Employee createdEmployee = employeeService.create(lucy);
 
         //then
         assertEquals("Lucy", createdEmployee.getName());
+        verify(mockedEmployeeRepository).addEmployee(argThat(Employee::isActive));
     }
 
     @Test
@@ -66,7 +67,7 @@ class EmployeeServiceTest {
         //when
 
         //Then
-        assertThrows(EmployeeAgeNotValidException.class, () -> employeeService.creat(lucy));
+        assertThrows(EmployeeAgeNotValidException.class, () -> employeeService.create(lucy));
         verify(mockedEmployeeRepository, never()).addEmployee(any());
     }
 
@@ -77,8 +78,21 @@ class EmployeeServiceTest {
         //when
 
         //Then
-        assertThrows(EmployeeSalaryNotValidException.class, () -> employeeService.creat(lucy));
+        assertThrows(EmployeeSalaryNotValidException.class, () -> employeeService.create(lucy));
         verify(mockedEmployeeRepository, never()).addEmployee(any());
 
+    }
+
+    @Test
+    void should_throw_EmployeeNotActiveException_when_create_given_an_inactive_employee() {
+        //given
+        Employee lucy = new Employee(1, "Lucy", 18, Gender.FEMALE, 8000.0);
+        lucy.setActive(false);
+        when(mockedEmployeeRepository.getEmployeeById(1)).thenReturn(lucy);
+        //when
+
+        //then
+        assertThrows(EmployeeNotActiveException.class, () -> employeeService.update(1, lucy));
+        verify(mockedEmployeeRepository, never()).updateEmployee(any(),any());
     }
 }
